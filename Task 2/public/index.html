@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NS Chat App</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="chat-container">
+    <header>
+      <div class="header-content">
+        <div class="logo-container">
+          <img src="logo.png" alt="NS Logo" class="logo" width="40" height="40" style="object-fit: contain;" />
+          <div class="online-status">
+            <span class="status-dot"></span>
+            <span class="status-text">Online</span>
+          </div>
+        </div>
+        <h1>NS Chat</h1>
+        <div class="header-actions">
+          <button class="theme-toggle" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button class="settings-btn" aria-label="Settings">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="chat-messages" id="messages">
+      <div class="welcome-message">
+        <h2>Welcome to NS Chat!</h2>
+        <p>Start chatting with others in real-time.</p>
+      </div>
+    </div>
+
+    <form id="chat-form">
+      <div class="input-wrapper">
+        <button type="button" class="emoji-btn" aria-label="Add emoji">
+          <i class="far fa-smile"></i>
+        </button>
+        <input 
+          id="message" 
+          placeholder="Type a message..." 
+          autocomplete="off"
+          aria-label="Message input"
+        />
+        <button type="button" class="attach-btn" aria-label="Attach file">
+          <i class="fas fa-paperclip"></i>
+        </button>
+        <button type="submit" class="send-btn" aria-label="Send message">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("message");
+    const messages = document.getElementById("messages");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (input.value.trim()) {
+        socket.emit("chat message", input.value);
+        input.value = "";
+      }
+    });
+
+    socket.on("chat message", function (msg) {
+      const messageDiv = document.createElement("div");
+      messageDiv.className = "message";
+      
+      const messageHeader = document.createElement("div");
+      messageHeader.className = "message-header";
+      
+      const username = document.createElement("span");
+      username.className = "username";
+      username.textContent = "User";
+      
+      const timestamp = document.createElement("span");
+      timestamp.className = "timestamp";
+      timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      messageHeader.appendChild(username);
+      messageHeader.appendChild(timestamp);
+      
+      const messageContent = document.createElement("div");
+      messageContent.className = "message-content";
+      messageContent.textContent = msg;
+      
+      messageDiv.appendChild(messageHeader);
+      messageDiv.appendChild(messageContent);
+      messages.appendChild(messageDiv);
+      
+      messages.scrollTop = messages.scrollHeight;
+    });
+
+    // Theme toggle functionality
+    const themeToggle = document.querySelector('.theme-toggle');
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-theme');
+      const icon = themeToggle.querySelector('i');
+      icon.classList.toggle('fa-moon');
+      icon.classList.toggle('fa-sun');
+    });
+
+    // Focus input on load
+    input.focus();
+  </script>
+</body>
+</html>
